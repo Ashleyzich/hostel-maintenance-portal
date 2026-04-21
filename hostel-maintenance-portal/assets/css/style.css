@@ -250,3 +250,8 @@ h3, h4, h5{
 .topbar .text-warning {
     color: #FFD700 !important;
 }
+
+.card-blue { background: var(--hit-blue); }
+.card-green { background: #198754; }
+.card-orange { background: var(--hit-gold); color: black; }
+.card-red { background: #dc3545; }

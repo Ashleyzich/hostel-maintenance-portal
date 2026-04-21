@@ -29,7 +29,7 @@
 <div class="container">
 
 <a class="navbar-brand text-warning fw-bold" href="#">
-HIT Maintenance Portal
+HIT Hostel Maintenance Portal
 </a>
 
 <div class="ms-auto">
@@ -59,7 +59,7 @@ style="height:90vh; background: linear-gradient(rgba(0,51,102,0.8), rgba(0,51,10
 <div class="container">
 
 <h1 class="display-4 fw-bold">
-Hostel Maintenance Made Easy
+HIT Hostel Maintenance Portal
 </h1>
 
 <p class="lead mt-3">

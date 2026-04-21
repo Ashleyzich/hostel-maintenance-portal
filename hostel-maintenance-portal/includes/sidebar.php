@@ -77,10 +77,18 @@ HIT Maintenance
 </li>
 
 <li class="nav-item">
+<a class="nav-link text-white" href="../supervisor/manage_users.php">
+<i class="bi bi-people"></i> Manage Users
+</a>
+</li>
+
+<li class="nav-item">
 <a class="nav-link text-white" href="../supervisor/reports.php">
 <i class="bi bi-bar-chart"></i> Reports
 </a>
 </li>
+
+
 
 <?php } ?>
 
