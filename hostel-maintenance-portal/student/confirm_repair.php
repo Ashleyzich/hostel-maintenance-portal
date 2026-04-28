@@ -9,7 +9,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'student'){
 
 include("../config/database.php");
 
-$request_id = $_GET['id'];
+$request_id = (int)$_GET['id'];
 
 ?>
 
@@ -17,25 +17,20 @@ $request_id = $_GET['id'];
 <?php include("../includes/sidebar.php"); ?>
 
 <div class="container-fluid">
-
 <div class="card shadow border-0">
-
 <div class="card-body">
-
-<h4>Did the technician arrive?</h4>
+<h4 class="mb-3">Feedback for Request #<?php echo $request_id; ?></h4>
+<p class="text-muted">Choose what happened so the supervisor can track service quality.</p>
 
 <a href="repair_yes.php?id=<?php echo $request_id; ?>" class="btn btn-success">
-Yes
+Staff Arrived & Work Done
 </a>
 
 <a href="repair_no.php?id=<?php echo $request_id; ?>" class="btn btn-danger">
-No
+Staff Did Not Show Up
 </a>
-
 </div>
-
 </div>
-
 </div>
 
 <?php include("../includes/sidebar_end.php"); ?>

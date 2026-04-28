@@ -13,6 +13,10 @@ $room = $_POST['room'];
 
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+
+if(!preg_match('/@hit\.ac\.zw$/i', $email)){
+$message = "<div class='alert alert-danger'>Use your institutional email ending with @hit.ac.zw.</div>";
+}else{
 $sql = "INSERT INTO users (name,email,password,role,hostel,room)
 VALUES ('$name','$email','$hashed_password','student','$hostel','$room')";
 
@@ -20,6 +24,7 @@ if($conn->query($sql)){
 $message = "<div class='alert alert-success'>Registration successful. You can now login.</div>";
 }else{
 $message = "<div class='alert alert-danger'>Error: ".$conn->error."</div>";
+}
 }
 
 }

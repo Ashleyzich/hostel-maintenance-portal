@@ -7,6 +7,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'staff'){
 }
 
 include("../config/database.php");
+include("../includes/assign_staff.php");
 
 if(isset($_GET['id'])){
 
@@ -36,6 +37,12 @@ UPDATE requests
 SET status='completed'
 WHERE id='$request_id'
 ");
+
+$student_result = $conn->query("SELECT student_id FROM requests WHERE id='$request_id'");
+if($student_result && $student_result->num_rows > 0){
+    $student = $student_result->fetch_assoc();
+    createNotification($conn, $student['student_id'], "Request #$request_id marked completed by technician. Please confirm and rate service.");
+}
 
 /* FREE the technician */
 

@@ -10,7 +10,8 @@ include("../config/database.php");
 
 $sql = "SELECT requests.*, users.name AS student_name,
         issue_types.issue_name,
-        staff_users.name AS technician
+        staff_users.name AS technician,
+        ratings.feedback AS service_feedback
 
         FROM requests
 
@@ -19,6 +20,7 @@ $sql = "SELECT requests.*, users.name AS student_name,
 
         LEFT JOIN staff ON requests.assigned_staff = staff.id
         LEFT JOIN users AS staff_users ON staff.user_id = staff_users.id
+        LEFT JOIN ratings ON ratings.request_id = requests.id
 
         ORDER BY requests.created_at DESC";
 
@@ -72,6 +74,8 @@ Monitor all hostel maintenance requests.
 <th>Technician</th>
 <th>Status</th>
 <th>Available Time</th>
+<th>Rating</th>
+<th>Feedback</th>
 <th>Action</th> <!-- ✅ NEW COLUMN -->
 </tr>
 </thead>
@@ -117,6 +121,8 @@ else{
 </td>
 
 <td><?php echo $row['available_time']; ?></td>
+<td><?php echo $row['rating'] ? (int)$row['rating'].'/10' : '-'; ?></td>
+<td><?php echo $row['service_feedback'] ? htmlspecialchars($row['service_feedback']) : '-'; ?></td>
 
 <!-- ✅ DELETE BUTTON -->
 <td>
@@ -132,7 +138,7 @@ Delete
 <?php
 }
 }else{
-echo "<tr><td colspan='10' class='text-center'>No maintenance requests found</td></tr>";
+echo "<tr><td colspan='12' class='text-center'>No maintenance requests found</td></tr>";
 }
 ?>
 
