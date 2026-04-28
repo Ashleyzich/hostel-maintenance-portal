@@ -22,17 +22,27 @@ if(!$request){
 
 if(isset($_POST['reschedule'])){
     $new_time = $conn->real_escape_string($_POST['available_time']);
+    $current_time = $request['available_time'];
 
-    $conn->query("UPDATE requests SET available_time='$new_time', status='pending', assigned_staff=NULL WHERE id='$request_id' AND student_id='$student_id'");
-
-    $assigned = assignTechnician($conn, (int)$request['issue_type_id'], $request_id, $new_time);
-
-    if($assigned){
-        createNotification($conn, $student_id, "Request #$request_id has been assigned after rescheduling.");
-        $message = "<div class='alert alert-success'>Request rescheduled and technician assigned.</div>";
+    if($new_time === $current_time){
+        $message = "<div class='alert alert-danger'>Please choose a different time from your current preferred time.</div>";
     } else {
-        createNotification($conn, $student_id, "Request #$request_id still has a scheduling conflict. Please choose another time.");
-        $message = "<div class='alert alert-warning'>Still no available technician at this time. Please try another slot.</div>";
+        $conn->query("UPDATE requests
+                      SET available_time='$new_time',
+                          status='pending',
+                          assigned_staff=NULL,
+                          technician_arrived=NULL,
+                          rating=NULL
+                      WHERE id='$request_id'
+                      AND student_id='$student_id'");
+
+        createNotification($conn, $student_id, "Request #$request_id was rescheduled to $new_time. Assignment will be re-attempted at that time.");
+
+        processDueAssignments($conn, $request_id);
+
+        $message = "<div class='alert alert-success'>Request rescheduled. The system will match a technician in real time at your selected time.</div>";
+
+        $request = $conn->query("SELECT * FROM requests WHERE id='$request_id' AND student_id='$student_id'")->fetch_assoc();
     }
 }
 ?>

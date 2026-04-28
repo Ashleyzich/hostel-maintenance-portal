@@ -77,15 +77,8 @@ if(isset($_POST['submit_request'])){
         if($conn->query($sql)){
             $request_id = (int)$conn->insert_id;
 
-            $assigned = assignTechnician($conn, $issue_type, $request_id, $available_time);
-
-            if($assigned){
-                createNotification($conn, $student_id, "Request #$request_id has been assigned to a technician.");
-                $message = "<div class='alert alert-success'>Request submitted and technician assigned.</div>";
-            } else {
-                createNotification($conn, $student_id, "Scheduling conflict for Request #$request_id at your preferred time. Please reschedule.");
-                $message = "<div class='alert alert-warning'>Request submitted, but no technician is available at that time. Please reschedule from My Requests.</div>";
-            }
+            createNotification($conn, $student_id, "Request #$request_id was logged. Technician assignment will be attempted at your preferred time ($available_time).");
+            $message = "<div class='alert alert-success'>Request submitted. Assignment will run at your preferred time, based on real-time staff availability.</div>";
         } else {
             $message = "<div class='alert alert-danger'>Unable to submit request. Please try again.</div>";
         }

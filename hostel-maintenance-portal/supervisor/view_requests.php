@@ -7,6 +7,9 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'supervisor'){
 }
 
 include("../config/database.php");
+include("../includes/assign_staff.php");
+
+processDueAssignments($conn);
 
 $sql = "SELECT requests.*, users.name AS student_name,
         issue_types.issue_name,

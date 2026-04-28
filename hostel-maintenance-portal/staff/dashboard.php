@@ -7,6 +7,9 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'staff'){
 }
 
 include("../config/database.php");
+include("../includes/assign_staff.php");
+
+processDueAssignments($conn);
 
 $user_id = $_SESSION['user_id'];
 

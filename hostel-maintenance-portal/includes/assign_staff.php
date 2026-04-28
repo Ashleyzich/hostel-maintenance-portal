@@ -69,4 +69,59 @@ function assignTechnician($conn, $issue_type, $request_id, $available_time){
     return false;
 }
 
+function notifySchedulingConflictOnce($conn, $request_id, $student_id, $available_time){
+    $safe_request_id = (int)$request_id;
+    $safe_student_id = (int)$student_id;
+    $safe_time = $conn->real_escape_string($available_time);
+
+    $marker = "[SCHEDULING_CONFLICT][Request #$safe_request_id][Time $safe_time]";
+    $safe_marker = $conn->real_escape_string($marker);
+
+    $exists = $conn->query("SELECT id FROM notifications
+                            WHERE user_id='$safe_student_id'
+                            AND message LIKE '%$safe_marker%'
+                            LIMIT 1");
+
+    if(!$exists || $exists->num_rows === 0){
+        $message = "Request #$safe_request_id cannot be assigned at $safe_time due to resource unavailability. Please update your preferred time. $marker";
+        createNotification($conn, $safe_student_id, $message);
+    }
+}
+
+function processDueAssignments($conn, $request_id = null){
+    $where_request = "";
+
+    if($request_id !== null){
+        $safe_request_id = (int)$request_id;
+        $where_request = " AND requests.id='$safe_request_id'";
+    }
+
+    $sql = "SELECT requests.id, requests.student_id, requests.issue_type_id, requests.available_time
+            FROM requests
+            WHERE requests.status='pending'
+            AND requests.assigned_staff IS NULL
+            AND requests.available_time <= NOW()".$where_request;
+
+    $result = $conn->query($sql);
+
+    if(!$result){
+        return;
+    }
+
+    while($row = $result->fetch_assoc()){
+        $assigned = assignTechnician(
+            $conn,
+            (int)$row['issue_type_id'],
+            (int)$row['id'],
+            $row['available_time']
+        );
+
+        if($assigned){
+            createNotification($conn, (int)$row['student_id'], "Request #".(int)$row['id']." has now been assigned and is in progress.");
+        } else {
+            notifySchedulingConflictOnce($conn, (int)$row['id'], (int)$row['student_id'], $row['available_time']);
+        }
+    }
+}
+
 ?>
