@@ -1,0 +1,257 @@
+/* ===============================
+   HIT THEME COLORS
+================================*/
+
+:root {
+    --hit-blue: #003366;
+    --hit-blue-dark: #002244;
+    --hit-gold: #FFD700;
+    --hit-light: #F5F7FA;
+    --hit-dark: #1A1A1A;
+}
+
+/* ===============================
+   BASE
+================================*/
+
+body{
+    font-family: Arial, sans-serif;
+    background-color: var(--hit-light);
+    margin: 0;
+    padding: 0;
+}
+
+/* ===============================
+   TOP HEADER / NAVBAR
+================================*/
+
+.topbar {
+    background: linear-gradient(90deg, var(--hit-blue), var(--hit-blue-dark));
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.topbar h4,
+.topbar h5,
+.topbar span {
+    margin: 0;
+    color: white;
+}
+
+.topbar i {
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* ===============================
+   SIDEBAR / NAVIGATION
+================================*/
+
+.nav-link{
+    color: white !important;
+    transition: 0.3s;
+}
+
+.nav-link:hover{
+    background: var(--hit-blue-dark);
+    border-radius: 6px;
+    padding-left: 10px;
+}
+
+/* Active menu item */
+.nav-link.active{
+    background: var(--hit-gold);
+    color: black !important;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+/* ===============================
+   DASHBOARD CARDS
+================================*/
+
+.dashboard-card{
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card-blue{
+    background: var(--hit-blue);
+}
+
+.card-green{
+    background: #0f5132;
+}
+
+.card-orange{
+    background: var(--hit-gold);
+    color: black;
+}
+
+.card-red{
+    background: #8B0000;
+}
+
+/* ===============================
+   GENERAL CARDS
+================================*/
+
+.card{
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* CARD HEADER */
+.card-header{
+    background: var(--hit-blue);
+    color: white;
+    font-weight: bold;
+}
+
+/* ===============================
+   HEADERS & TEXT
+================================*/
+
+h3, h4, h5{
+    color: inherit;
+}
+
+/* Page header */
+.page-header{
+    background: var(--hit-blue);
+    color: white;
+    border-radius: 12px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+}
+
+/* ===============================
+   TABLE STYLING
+================================*/
+
+.table{
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Table head */
+.table thead{
+    background: var(--hit-blue);
+    color: white;
+}
+
+/* Remove bootstrap dark override */
+.table-dark{
+    background: var(--hit-blue) !important;
+    color: white !important;
+}
+
+/* Row hover effect */
+.table tbody tr:hover{
+    background-color: #f1f5f9;
+}
+
+/* ===============================
+   BUTTONS
+================================*/
+
+.btn-primary{
+    background-color: var(--hit-blue);
+    border: none;
+}
+
+.btn-primary:hover{
+    background-color: var(--hit-blue-dark);
+}
+
+.btn-warning{
+    background-color: var(--hit-gold);
+    color: black;
+    border: none;
+}
+
+.btn-success{
+    background-color: #198754;
+    border: none;
+}
+
+.btn-danger{
+    background-color: #dc3545;
+    border: none;
+}
+
+/* ===============================
+   STATUS BADGES
+================================*/
+
+.badge{
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+/* Optional custom badges */
+.badge-pending{
+    background: #ffc107;
+    color: black;
+}
+
+.badge-completed{
+    background: #198754;
+}
+
+.badge-progress{
+    background: #0d6efd;
+}
+
+.badge-unassigned{
+    background: #dc3545;
+}
+
+/* ===============================
+   UTILITIES
+================================*/
+
+.shadow-sm{
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.rounded{
+    border-radius: 10px;
+}
+
+/* ===============================
+   GLOBAL TOP HEADER (HIT STYLE)
+================================*/
+
+.topbar {
+    background: linear-gradient(135deg, #003366, #0a4c8a);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Ensure all text stays white */
+.topbar * {
+    color: white;
+}
+
+/* Gold highlights */
+.topbar .text-warning {
+    color: #FFD700 !important;
+}
+
+.card-blue { background: var(--hit-blue); }
+.card-green { background: #198754; }
+.card-orange { background: var(--hit-gold); color: black; }
+.card-red { background: #dc3545; }
