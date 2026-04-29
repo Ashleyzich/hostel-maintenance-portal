@@ -77,7 +77,7 @@ Welcome back, <strong><?php echo $_SESSION['name']; ?></strong> 🔧
 
 <div class="col-md-6">
 
-<div class="card bg-primary text-white shadow border-0">
+<div class="card bg-primary text-white shadow border-0">␊
 
 <div class="card-body">
 
@@ -186,9 +186,9 @@ echo "<span class='badge bg-success'>Completed</span>";
 if($row['status'] == "in_progress"){
 ?>
 
-<a href="complete_request.php?id=<?php echo $row['id']; ?>"
+<a href="mark_attended.php?id=<?php echo $row['id']; ?>"
 class="btn btn-success btn-sm">
-Mark Completed
+I Have Attended
 </a>
 
 <?php

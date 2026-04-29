@@ -7,7 +7,6 @@ exit();
 }
 
 include("../config/database.php");
-
 /* ===============================
    REPORT DATA
 ================================*/
@@ -60,12 +59,14 @@ WHERE requests.rating IS NOT NULL
 
 $overall_avg_rating = $top_rating_data['overall_avg_rating'] ? $top_rating_data['overall_avg_rating'] : 0;
 $total_ratings = $top_rating_data['total_ratings'];
+
 ?>
 
 <?php include("../includes/header.php"); ?>
 <?php include("../includes/sidebar.php"); ?>
 
 <div class="container-fluid">
+
 
 <!-- Page Header -->
 <div class="page-header">
@@ -84,6 +85,7 @@ View maintenance analytics and system performance.
 </p>
 
 </div>
+
 
 <i class="bi bi-graph-up-arrow display-5 text-warning"></i>
 

@@ -1,67 +1,87 @@
 <?php
 
-function createNotification($conn, $user_id, $message){
-    $safe_user_id = (int)$user_id;
-    $safe_message = $conn->real_escape_string($message);
+require_once __DIR__ . "/send_email.php";
 
-    $conn->query("INSERT INTO notifications (user_id, message) VALUES ('$safe_user_id', '$safe_message')");
+/* ===================== NOTIFICATIONS ===================== */
+
+function createNotification($conn, $user_id, $message){
+    $user_id = (int)$user_id;
+    $message = $conn->real_escape_string($message);
+
+    $conn->query("INSERT INTO notifications (user_id, message) VALUES ($user_id, '$message')");
 }
 
+/* ===================== ACTIVITY LOG ===================== */
+
+function logRequestActivity($conn, $request_id, $status, $remarks = null){
+    $request_id = (int)$request_id;
+    $status = $conn->real_escape_string($status);
+    $remarks = $remarks ? "'" . $conn->real_escape_string($remarks) . "'" : "NULL";
+
+    $conn->query("
+        INSERT INTO request_activity (request_id, status, remarks)
+        VALUES ($request_id, '$status', $remarks)
+    ");
+}
+
+/* ===================== SPECIALIZATION ===================== */
+
 function getSpecializationByIssueType($issue_type){
-    if($issue_type == 1){
-        return "plumber";
-    }
-
-    if($issue_type == 2){
-        return "electrician";
-    }
-
+    if($issue_type == 1) return "plumber";
+    if($issue_type == 2) return "electrician";
     return "carpenter";
 }
 
-function assignTechnician($conn, $issue_type, $request_id, $available_time){
-    $specialization = getSpecializationByIssueType($issue_type);
-    $safe_time = $conn->real_escape_string($available_time);
-    $safe_request_id = (int)$request_id;
+/* ===================== ASSIGN TECHNICIAN ===================== */
 
-    $sql = "SELECT staff.id, staff.user_id, COUNT(active_requests.id) AS active_count
+function assignTechnician($conn, $issue_type, $request_id, $available_time){
+
+    $specialization = getSpecializationByIssueType($issue_type);
+    $request_id = (int)$request_id;
+    $available_time = $conn->real_escape_string($available_time);
+
+    $sql = "SELECT staff.id, staff.user_id, users.name, users.email
             FROM staff
-            LEFT JOIN requests AS active_requests
-                ON active_requests.assigned_staff = staff.id
-                AND active_requests.status = 'in_progress'
-            WHERE staff.specialization='$specialization'
-            AND staff.status='free'
-            AND staff.id NOT IN (
-                SELECT assigned_staff
-                FROM requests
-                WHERE available_time='$safe_time'
-                AND status='in_progress'
-                AND assigned_staff IS NOT NULL
-            )
-            GROUP BY staff.id, staff.user_id
-            ORDER BY active_count ASC, staff.id ASC
+            INNER JOIN users ON users.id = staff.user_id
+            WHERE staff.specialization = '$specialization'
+            AND staff.status = 'free'
             LIMIT 1";
 
     $result = $conn->query($sql);
 
     if($result && $result->num_rows > 0){
+
         $staff = $result->fetch_assoc();
         $staff_id = (int)$staff['id'];
 
-        $assign = "UPDATE requests
-                   SET assigned_staff='$staff_id',
-                       status='in_progress'
-                   WHERE id='$safe_request_id'";
+        // assign
+        $conn->query("
+            UPDATE requests
+            SET assigned_staff = $staff_id,
+                status = 'in_progress'
+            WHERE id = $request_id
+        ");
 
-        $conn->query($assign);
+        // mark busy
+        $conn->query("UPDATE staff SET status='occupied' WHERE id=$staff_id");
 
-        $update = "UPDATE staff
-                   SET status='occupied'
-                   WHERE id='$staff_id'";
+        logRequestActivity($conn, $request_id, "in_progress", "Technician assigned");
 
-        $conn->query($update);
-
-        createNotification($conn, $staff['user_id'], "New maintenance task assigned (Request #$safe_request_id) for $safe_time.");
+        /* ===== EMAIL TECHNICIAN ===== */
+        if(!empty($staff['email'])){
+            sendEmail(
+                $staff['email'],
+                $staff['name'],
+                "New Maintenance Task Assigned",
+                "
+                <h3>New Task Assigned</h3>
+                <p>Hello {$staff['name']},</p>
+                <p>You have been assigned a maintenance request.</p>
+                <p><b>Request ID:</b> #$request_id</p>
+                <p><b>Scheduled Time:</b> $available_time</p>
+                "
+            );
+        }
 
         return true;
     }
@@ -69,46 +89,37 @@ function assignTechnician($conn, $issue_type, $request_id, $available_time){
     return false;
 }
 
+/* ===================== CONFLICT NOTIFICATION ===================== */
+
 function notifySchedulingConflictOnce($conn, $request_id, $student_id, $available_time){
-    $safe_request_id = (int)$request_id;
-    $safe_student_id = (int)$student_id;
-    $safe_time = $conn->real_escape_string($available_time);
 
-    $marker = "[SCHEDULING_CONFLICT][Request #$safe_request_id][Time $safe_time]";
-    $safe_marker = $conn->real_escape_string($marker);
+    $request_id = (int)$request_id;
+    $student_id = (int)$student_id;
 
-    $exists = $conn->query("SELECT id FROM notifications
-                            WHERE user_id='$safe_student_id'
-                            AND message LIKE '%$safe_marker%'
-                            LIMIT 1");
-
-    if(!$exists || $exists->num_rows === 0){
-        $message = "Request #$safe_request_id cannot be assigned at $safe_time due to resource unavailability. Please update your preferred time. $marker";
-        createNotification($conn, $safe_student_id, $message);
-    }
+    createNotification(
+        $conn,
+        $student_id,
+        "Request #$request_id could not be assigned at $available_time. Please update your time."
+    );
 }
 
-function processDueAssignments($conn, $request_id = null){
-    $where_request = "";
+/* ===================== MAIN PROCESS ===================== */
 
-    if($request_id !== null){
-        $safe_request_id = (int)$request_id;
-        $where_request = " AND requests.id='$safe_request_id'";
-    }
+function processDueAssignments($conn){
 
-    $sql = "SELECT requests.id, requests.student_id, requests.issue_type_id, requests.available_time
+    $sql = "SELECT requests.id, requests.student_id, requests.issue_type_id, requests.available_time,
+                   users.name AS student_name, users.email AS student_email
             FROM requests
+            INNER JOIN users ON users.id = requests.student_id
             WHERE requests.status='pending'
-            AND requests.assigned_staff IS NULL
-            AND requests.available_time <= NOW()".$where_request;
+            AND requests.available_time <= NOW()";
 
     $result = $conn->query($sql);
 
-    if(!$result){
-        return;
-    }
+    if(!$result) return;
 
     while($row = $result->fetch_assoc()){
+
         $assigned = assignTechnician(
             $conn,
             (int)$row['issue_type_id'],
@@ -117,11 +128,55 @@ function processDueAssignments($conn, $request_id = null){
         );
 
         if($assigned){
-            createNotification($conn, (int)$row['student_id'], "Request #".(int)$row['id']." has now been assigned and is in progress.");
+
+            /* ===== SYSTEM NOTIFICATION ===== */
+            createNotification(
+                $conn,
+                (int)$row['student_id'],
+                "Request #{$row['id']} is now in progress."
+            );
+
+            /* ===== EMAIL STUDENT ===== */
+            if(!empty($row['student_email'])){
+                sendEmail(
+                    $row['student_email'],
+                    $row['student_name'],
+                    "Technician Assigned",
+                    "
+                    <h3>Technician Assigned</h3>
+                    <p>Hello {$row['student_name']},</p>
+                    <p>Your request is now being handled.</p>
+                    <p><b>Request ID:</b> #{$row['id']}</p>
+                    <p><b>Status:</b> In Progress</p>
+                    "
+                );
+            }
+
         } else {
-            notifySchedulingConflictOnce($conn, (int)$row['id'], (int)$row['student_id'], $row['available_time']);
+
+            notifySchedulingConflictOnce(
+                $conn,
+                (int)$row['id'],
+                (int)$row['student_id'],
+                $row['available_time']
+            );
+
+            /* ===== EMAIL FAILURE ===== */
+            if(!empty($row['student_email'])){
+                sendEmail(
+                    $row['student_email'],
+                    $row['student_name'],
+                    "No Technician Available",
+                    "
+                    <h3>No Technician Available</h3>
+                    <p>Hello {$row['student_name']},</p>
+                    <p>No technician is available at your selected time.</p>
+                    <p><b>Request ID:</b> #{$row['id']}</p>
+                    <p>Please update your preferred time.</p>
+                    "
+                );
+            }
         }
     }
 }
-
 ?>
