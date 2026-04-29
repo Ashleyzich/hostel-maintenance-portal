@@ -6,7 +6,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'supervisor'){
     exit();
 }
 
-include("../config/database.php");
+include("../config/database.php"); 
 include("../includes/assign_staff.php");
 
 processDueAssignments($conn);

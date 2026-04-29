@@ -6,7 +6,7 @@ if(!isset($_SESSION['role']) || $_SESSION['role'] != 'staff'){
     exit();
 }
 
-include("../config/database.php");
+require_once(__DIR__ . "/../config/database.php");
 include("../includes/assign_staff.php");
 
 processDueAssignments($conn);
@@ -77,7 +77,7 @@ Welcome back, <strong><?php echo $_SESSION['name']; ?></strong> 🔧
 
 <div class="col-md-6">
 
-<div class="card bg-primary text-white shadow border-0">␊
+<div class="card bg-primary text-white shadow border-0">
 
 <div class="card-body">
 
