@@ -18,10 +18,7 @@ This system allows students to report maintenance issues and track their status.
 3. Copy project folder into `htdocs`
 4. Run: http://localhost/hostel-maintenance-portal
 
-🔐 Test Accounts
 
-Student: [ratie@yahoo.com]
-Password: 1234
 
 👨‍💻 Author
 
